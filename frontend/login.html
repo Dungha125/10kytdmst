@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Đăng nhập hệ thống</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ptit-red: #a71930;
+      --ptit-dark: #8c162b;
+      --gray-light: #f4f4f4;
+      --gray-border: #ccc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--gray-light);
+      font-size: 18px;
+      color: #333;
+    }
+
+    .banner {
+      background-color: var(--ptit-red);
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+    }
+
+    .banner img {
+      height: 60px;
+      margin-right: 20px;
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .banner p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 60px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--ptit-red);
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 16px;
+      border: 1px solid var(--gray-border);
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: var(--ptit-red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: var(--ptit-dark);
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      .banner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .banner img {
+        margin-bottom: 10px;
+      }
+
+      .container {
+        margin: 30px 15px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="banner">
+    <img src="https://ptit.edu.vn/wp-content/uploads/2020/04/logo-ptit.png" alt="PTIT Logo" />
+    <div>
+      <h1>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
+      <p>Hệ thống sáng kiến nội bộ</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Đăng nhập</h2>
+    <form id="loginForm">
+      <label for="username">Tên đăng nhập</label>
+      <input type="text" id="username" required />
+
+      <label for="password">Mật khẩu</label>
+      <input type="password" id="password" required />
+
+      <button type="submit">Đăng nhập</button>
+      <div class="error" id="errorMsg"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('username', username);
+        if (data.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else if (data.role === 'leader') {
+          window.location.href = 'review.html';
+        }
+      } else {
+        document.getElementById('errorMsg').textContent = data.message || 'Sai tài khoản hoặc mật khẩu!';
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+<!--DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng nhập</title>
+</head>
+<body>
+  <h2>Đăng nhập</h2>
+  <form id="loginForm">
+    <input name="username" placeholder="Tên đăng nhập" required><br>
+    <input name="password" type="password" placeholder="Mật khẩu" required><br>
+    <button type="submit">Đăng nhập</button>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      const res = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        alert('Sai tên đăng nhập hoặc mật khẩu');
+        return;
+      }
+      const { token, role, username } = await res.json();
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('username', username);
+      if (role === 'admin') {
+        window.location.href = "admin.html";
+      } else if (role === 'leader') {
+        window.location.href = "review.html";
+      } else {
+        alert("Không xác định được vai trò.");
+      }
+    });
+  </script>
+</body>
+</html-->

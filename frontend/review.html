@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Đánh giá ý tưởng</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ptit-red: #a71930;
+      --ptit-dark: #8c162b;
+      --gray-light: #f4f4f4;
+      --gray-border: #ccc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-size: 18px;
+      background-color: var(--gray-light);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .banner {
+      background-color: var(--ptit-red);
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+    }
+
+    .banner img {
+      height: 60px;
+      margin-right: 20px;
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .banner p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .footer {
+      background-color: #a71930;
+      color: white;
+      text-align: center;
+      padding: 16px 10px;
+      font-size: 14px;
+      margin-top: 40px;
+      border-top: 4px solid #8c162b;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--ptit-red);
+      margin-bottom: 20px;
+    }
+
+    .logout {
+      text-align: right;
+      margin-bottom: 15px;
+    }
+
+    .logout button {
+      background-color: var(--ptit-red);
+      color: white;
+      padding: 8px 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .logout button:hover {
+      background-color: var(--ptit-dark);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid var(--gray-border);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    input[type="number"], textarea {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid var(--gray-border);
+      border-radius: 5px;
+    }
+
+    button.save-btn {
+      background-color: var(--ptit-red);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button.save-btn:hover {
+      background-color: var(--ptit-dark);
+    }
+
+    @media (max-width: 768px) {
+      .banner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .banner img {
+        margin-bottom: 10px;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        background-color: #fafafa;
+        padding: 10px;
+        border-radius: 6px;
+      }
+
+      td {
+        border: none;
+        padding: 5px 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    
+    <div>
+      <h1>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
+      <p>Hệ thống đánh giá ý tưởng nội bộ</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="logout">
+      <button onclick="logout()">Đăng xuất</button>
+    </div>
+
+    <h2>Đánh giá Ý tưởng</h2>
+    <table id="reviewTable">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Tiêu đề</th>
+          <th>Mô tả</th>
+          <th>Chấm điểm</th>
+          <th>Ghi chú</th>
+          <th>Cập nhật</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const username = localStorage.getItem('username');
+    if (!token || role !== 'leader') window.location.href = "login.html";
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    async function loadSuggestions() {
+      const res = await fetch('http://localhost:3000/api/admin/suggestions', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const list = await res.json();
+      const tbody = document.querySelector('#reviewTable tbody');
+      tbody.innerHTML = '';
+
+      list.forEach((s, index) => {
+        const leaderScore = s.leader_scores?.[username]?.score || '';
+        const leaderNote = s.leader_scores?.[username]?.note || '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="STT">${index + 1}</td>
+          <td data-label="Tiêu đề">${s.title}</td>
+          <td data-label="Mô tả">${s.description}</td>
+          <td data-label="Chấm điểm">
+            <input type="number" min="0" max="100" value="${leaderScore}" id="score-${s.id}">
+          </td>
+          <td data-label="Ghi chú">
+            <textarea rows="2" id="note-${s.id}">${leaderNote}</textarea>
+          </td>
+          <td data-label="Cập nhật">
+            <button class="save-btn" onclick="updateScore('${s.id}')">Lưu</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateScore(id) {
+      const score = document.getElementById('score-' + id).value;
+      const note = document.getElementById('note-' + id).value;
+     
+     /* await fetch('http://localhost:3000/api/leader/score/' + id, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ score, note })
+      });*/
+      await fetch('http://localhost:3000/api/suggestions/' + id + '/score', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ score, note })
+      });
+      alert('Đã lưu!');
+    }
+
+    loadSuggestions();
+  </script>
+   <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Học viện Công nghệ Bưu chính Viễn thông. Bản quyền thuộc về PTIT.</p>
+  </footer>
+</body>
+</html>

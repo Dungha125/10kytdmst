@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản trị hệ thống - PTIT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ptit-red: #a71930;
+      --bg-light: #f9f9f9;
+      --text-dark: #333;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      margin: 0;
+    }
+    .banner {
+      background: var(--ptit-red);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .footer {
+      background-color: #a71930;
+      color: white;
+      text-align: center;
+      padding: 16px 10px;
+      font-size: 14px;
+      margin-top: 40px;
+      border-top: 4px solid #8c162b;
+    }
+
+    @media (max-width: 600px) {
+      .footer {
+        font-size: 13px;
+        padding: 14px 8px;
+      }
+    }
+    h2 {
+      color: var(--ptit-red);
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    form label {
+      flex: 1 1 100%;
+      font-weight: bold;
+    }
+    input[type="datetime-local"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      flex: 1 1 45%;
+      font-size: 16px;
+    }
+    button {
+      background-color: var(--ptit-red);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #8c172a;
+    }
+    .logout {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #eee;
+    }
+    @media (max-width: 600px) {
+      form {
+        flex-direction: column;
+      }
+      input[type="datetime-local"] {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <h1>HỆ THỐNG QUẢN TRỊ SÁNG KIẾN - PTIT</h1>
+  </div>
+
+  <div class="container">
+    <div class="logout">
+      <button onclick="logout()">Đăng xuất</button>
+    </div>
+
+    <h2>Cấu hình thời gian nhận ý tưởng</h2>
+    <form id="configForm">
+      <label for="open_time">Thời gian bắt đầu:</label>
+      <input type="datetime-local" name="open_time" id="open_time" required />
+      <label for="close_time">Thời gian kết thúc:</label>
+      <input type="datetime-local" name="close_time" id="close_time" required />
+      <button type="submit">Cập nhật</button>
+    </form>
+
+    <h2>Thống kê ý tưởng</h2>
+    <table id="suggestionTable">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Họ tên</th>
+          <th>Đơn vị</th>
+          <th>Tiêu đề</th>
+          <th>Điểm BGK</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div style="text-align: right; margin-top: 10px;">
+      <button onclick="exportToExcel()">Xuất Excel</button>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || role !== 'admin') window.location.href = "login.html";
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    document.getElementById('configForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(this));
+      await fetch('http://localhost:3000/api/admin/config', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify(data)
+      });
+      alert('Đã cập nhật thời gian');
+    });
+
+    async function loadConfig() {
+      const res = await fetch('http://localhost:3000/api/admin/config', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const config = await res.json();
+      if (config.open_time) document.getElementById('open_time').value = config.open_time.substring(0, 16);
+      if (config.close_time) document.getElementById('close_time').value = config.close_time.substring(0, 16);
+    }
+
+    async function loadSuggestions() {
+      const res = await fetch('http://localhost:3000/api/admin/suggestions', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const list = await res.json();
+      const tbody = document.querySelector('#suggestionTable tbody');
+      tbody.innerHTML = '';
+      list.forEach((s, index) => {
+        let scores = '';
+        if (s.leader_scores) {
+          scores = Object.entries(s.leader_scores)
+            .map(([leader, data]) => `${leader}: ${data.score}`)
+            .join('; ');
+        }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${s.name}</td>
+          <td>${s.department}</td>
+          <td>${s.title}</td>
+          <td>${scores}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportToExcel() {
+      const table = document.getElementById("suggestionTable");
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(table);
+      XLSX.utils.book_append_sheet(wb, ws, "Ý tưởng");
+      XLSX.writeFile(wb, "thong_ke_y_tuong.xlsx");
+    }
+
+    loadConfig();
+    loadSuggestions();
+  </script>
+   <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Học viện Công nghệ Bưu chính Viễn thông. Bản quyền thuộc về PTIT.</p>
+  </footer>
+</body>
+</html>
+

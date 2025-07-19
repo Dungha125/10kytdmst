@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gửi ý tưởng - PTIT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --ptit-red: #a71930;
+      --bg-light: #f9f9f9;
+      --text-dark: #333;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      font-size: 18px;
+      background: var(--bg-light);
+      color: var(--text-dark);
+    }
+    .banner {
+      background: var(--ptit-red);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .footer {
+      background-color: #a71930;
+      color: white;
+      text-align: center;
+      padding: 16px 10px;
+      font-size: 14px;
+      margin-top: 40px;
+      border-top: 4px solid #8c162b;
+    }
+     .dialog {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .dialog-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .dialog-content button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #a71930;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .footer {
+        font-size: 13px;
+        padding: 14px 8px;
+      }
+    }
+    h2 {
+      color: var(--ptit-red);
+      text-align: center;
+      font-size: 1.4em;
+    }
+    p.description {
+      text-align: justify;
+      margin-bottom: 20px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      font-size: 16px;
+      min-height: 80px;
+    }
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: var(--ptit-red);
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #881627;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px;
+      }
+      .banner h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <h1>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
+     
+  </div>
+
+  <div class="container">
+    <h2>Cuộc thi 1 Vạn Ý Tưởng Đổi Mới Sáng tạo PTIT</h2>
+    <p class="description">
+      Đối tượng tham gia: Tất cả sinh viên Học viện Công nghệ Bưu chính Viễn thông (Cơ sở Hà Nội và TP.HCM), các hệ đào tạo: ĐH Chính quy, Vừa làm vừa học, Từ xa; các Liên chi đoàn, CLB, Đội, Nhóm trực thuộc Đoàn Thanh niên Học viện.
+    </p>
+
+    <div id="errorMsg" class="error" style="display:none;">
+      Chưa đến thời gian bắt đầu hoặc thời gian mở đã hết
+    </div>
+
+   <form id="suggestForm" style="display:none;" >
+      <input name="name" placeholder="Họ và tên" required />
+      <input name="department" placeholder="Đơn vị" required />
+      <input name="phone" placeholder="Số điện thoại" required />
+      <input name="title" placeholder="Tên ý tưởng" required />
+      <textarea name="description" placeholder="Mô tả ngắn (dưới 200 từ)" maxlength="200" required></textarea>
+      <button type="submit">Gửi ý tưởng</button>
+    </form>
+ 
+  </div>
+
+  <div class="dialog" id="qrDialog">
+    <div class="dialog-content">
+      <p>Gửi thành công! Quét mã QR để xem lại ý tưởng:</p>
+      <div id="qrCanvas"></div>
+      <button onclick="closeDialog()">Đóng</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Học viện Công nghệ Bưu chính Viễn thông. Bản quyền thuộc về PTIT.</p>
+  </footer>
+  
+  <script>
+
+    async function checkTimeConfig() {
+      try {
+        const res = await fetch('http://localhost:3000/api/admin/config');
+        const config = await res.json();
+        const now = new Date();
+        const open = new Date(config.open_time);
+        const close = new Date(config.close_time);
+
+        console.log("xxxxx");
+       
+        if (!config.open_time || !config.close_time || (now >= open && now <= close)) {
+          document.getElementById('suggestForm').style.display = 'block';
+        } else {
+          document.getElementById('errorMsg').style.display = 'block';
+        }
+      } catch {
+        document.getElementById('suggestForm').style.display = 'block';
+      }
+    }
+
+    checkTimeConfig();
+
+    
+    document.getElementById('suggestForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      console.log('form submitted');  // Thêm dòng này
+      const data = Object.fromEntries(new FormData(this));
+      console.log("yyyyyy");
+      const res = await fetch('http://localhost:3000/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await res.json();
+      console.log(result.message);
+      
+      const dialog = document.getElementById('qrDialog');
+      const canvasContainer = document.getElementById('qrCanvas');
+      const url =window.location.origin + '/frontend/view.html?id=' + result.id;
+
+      
+      QRCode.toCanvas(url, function (err, canvas) {
+        if (!err) {
+          console.log("QR Code ready, showing dialog");
+          canvasContainer.innerHTML = '';
+          canvasContainer.appendChild(canvas);
+          dialog.style.display = 'flex';
+          
+        }else {
+          alert('Lỗi tạo mã QR');
+        }
+      });
+      alert(url);
+      return false; 
+    });
+  
+
+  function closeDialog() {
+    document.getElementById('qrDialog').style.display = 'none';
+    const form = document.getElementById('suggestForm'); // <--- thêm dòng này
+    form.reset(); 
+  }
+
+  </script>
+
+  
+</body>
+</html>

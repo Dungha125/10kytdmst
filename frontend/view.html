@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Xem ý tưởng</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      font-size: 18px;
+    }
+
+    .banner {
+      background-color: #a71930;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+    }
+
+    .banner img {
+      height: 60px;
+      margin-right: 20px;
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .banner p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #a71930;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .info p {
+      margin: 10px 0;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .info strong {
+      color: #444;
+    }
+
+    .footer {
+      background-color: #a71930;
+      color: white;
+      text-align: center;
+      padding: 16px 10px;
+      font-size: 14px;
+      margin-top: 40px;
+      border-top: 4px solid #8c162b;
+    }
+
+    @media (max-width: 600px) {
+      .container { margin: 20px 15px; padding: 20px; }
+      .banner { flex-direction: column; text-align: center; }
+      .banner img { margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    
+    <div>
+      <h1>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
+      <p>Xem lại ý tưởng đã gửi</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Thông tin ý tưởng</h2>
+    <div class="info" id="content">Đang tải...</div>
+  </div>
+
+  <footer class="footer">
+    © 2025 Học viện Công nghệ Bưu chính Viễn thông. Bản quyền thuộc về PTIT.
+  </footer>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    fetch('http://localhost:3000/api/view/' + id)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('content').innerHTML = `
+          <p><strong>Tiêu đề:</strong> ${data.title}</p>
+          <p><strong>Mô tả:</strong> ${data.description}</p>
+          <p><strong>Tổng điểm:</strong> ${data.totalScore}</p>
+          <p><strong>Xếp hạng:</strong> Top ${data.rank}</p>
+        `;
+      })
+      .catch(() => {
+        document.getElementById('content').innerHTML = '<p style="color:red">Không tìm thấy sáng kiến.</p>';
+      });
+  </script>
+</body>
+</html>
