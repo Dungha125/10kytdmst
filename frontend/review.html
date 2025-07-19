@@ -212,7 +212,7 @@
     }
 
     async function loadSuggestions() {
-      const res = await fetch('http://localhost:3000/api/admin/suggestions', {
+      const res = await fetch('/api/admin/suggestions', {
         headers: { Authorization: 'Bearer ' + token }
       });
       const list = await res.json();
@@ -253,7 +253,7 @@
         },
         body: JSON.stringify({ score, note })
       });*/
-      await fetch('http://localhost:3000/api/suggestions/' + id + '/score', {
+      await fetch('/api/suggestions/' + id + '/score', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

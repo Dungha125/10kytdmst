@@ -167,7 +167,7 @@
     document.getElementById('configForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(this));
-      await fetch('http://localhost:3000/api/admin/config', {
+      await fetch('/api/admin/config', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +179,7 @@
     });
 
     async function loadConfig() {
-      const res = await fetch('http://localhost:3000/api/admin/config', {
+      const res = await fetch('/api/admin/config', {
         headers: { Authorization: 'Bearer ' + token }
       });
       const config = await res.json();
@@ -188,7 +188,7 @@
     }
 
     async function loadSuggestions() {
-      const res = await fetch('http://localhost:3000/api/admin/suggestions', {
+      const res = await fetch('/api/admin/suggestions', {
         headers: { Authorization: 'Bearer ' + token }
       });
       const list = await res.json();
