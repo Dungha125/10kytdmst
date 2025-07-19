@@ -120,7 +120,7 @@
 <body>
 
   <div class="banner">
-    <img src="https://ptit.edu.vn/wp-content/uploads/2020/05/logo-ptit-1.svg" alt="PTIT Logo" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Logo_PTIT_University.png" alt="PTIT Logo" />
     <div>
       <h1>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
       <p>Hệ thống sáng kiến nội bộ</p>
@@ -146,7 +146,7 @@
       e.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
