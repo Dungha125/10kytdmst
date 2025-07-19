@@ -14,4 +14,5 @@ app.use('/api/suggestions', require('./routes/suggestions'));
 app.use('/api/admin', require('./routes/config'));
 app.use('/api/view', require('./routes/suggestions'));
 
-app.listen(3000, () => console.log('Server đang chạy tại http://localhost:3000'));
+// app.listen(3000, () => console.log('Server đang chạy tại http://localhost:3000'));
+module.exports = app;
