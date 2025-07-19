@@ -17,18 +17,42 @@
       font-family: 'Roboto', sans-serif;
       margin: 0;
       font-size: 18px;
-      background: var(--bg-light);
+      background-color: var(--bg-light);
+      background-image:
+        linear-gradient(rgba(167, 25, 48, 0.04) 1px, transparent 1px),
+        linear-gradient(to right, rgba(167, 25, 48, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
       color: var(--text-dark);
     }
     .banner {
       background: var(--ptit-red);
       color: white;
-      padding: 20px;
-      text-align: center;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
     }
     .banner h1 {
       margin: 0;
-      font-size: 26px;
+      font-size: 24px;
+      flex-grow: 1; 
+    }
+    .login-btn {
+        background: white;
+        color: var(--ptit-red);
+        padding: 8px 18px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 15px;
+        transition: background-color 0.2s ease-in-out;
+        border: 1px solid var(--ptit-red-dark);
+        white-space: nowrap; /* Ngăn nút bị xuống dòng */
+        flex-shrink: 0; /* Không cho nút bị co lại */
+    }
+    .login-btn:hover {
+        background-color: #f2f2f2;
     }
     .container {
       max-width: 650px;
@@ -127,7 +151,8 @@
         padding: 20px;
       }
       .banner h1 {
-        font-size: 20px;
+        font-size: 14px;
+        text-wrap: wrap;
       }
     }
   </style>
@@ -135,7 +160,7 @@
 <body>
   <div class="banner">
     <h1>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
-     
+     <a href="/frontend/login.html" class="login-btn">Đăng nhập</a>
   </div>
 
   <div class="container">
